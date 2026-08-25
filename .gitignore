@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ผลลัพธ์ชั่วคราว / debug (ไฟล์ผลจริงใน results/ ที่ต้องการเก็บ ให้ commit ตามปกติ)
+results/*.log
+results/dashboard_smoke.json
+
+# ไฟล์ระบบปฏิบัติการ
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# โปรแกรมแก้ไขโค้ด
+.vscode/
+.idea/

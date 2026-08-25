@@ -1,0 +1,9 @@
+# Green Code Profiler — dependencies
+# ติดตั้งด้วย:  pip install -r requirements.txt
+
+psutil>=5.9        # วัดหน่วยความจำ/CPU ของโปรเซส (ชั้นที่ 1)
+Flask>=3.0         # เว็บแดชบอร์ด (ชั้นที่ 3)
+matplotlib>=3.7    # สร้างกราฟผลการทดลอง (make_figures.py)
+
+# ตัวเลือกเสริม (ไม่บังคับ) — ช่วยให้การคำนวณสถิติแม่นยำขึ้น
+numpy>=1.24
