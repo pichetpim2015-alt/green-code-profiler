@@ -6,7 +6,9 @@ Green Code Profiler measures the **latency** and **memory footprint** of any run
 
 Energy and carbon are **model estimates, not wall-socket measurements**. The model, its coefficients, and its failure modes are documented in [Methodology](#methodology) and [Limits](#limits).
 
-Built as an IS2 research project at Khon Kaen Wittayayon School, academic year 2569. Python 3.9+, MIT licensed, tested on Windows 11.
+Built as an IS2 research project at Khon Kaen Wittayayon School, academic year 2569. Python 3.9+, MIT licensed, tested on Windows 11 and Linux.
+
+📖 [อ่านฉบับภาษาไทย (Thai README)](README.md) · 📑 [Proof of Concept dossier](docs/GREEN_PROFILER_POC.md)
 
 ---
 
@@ -142,16 +144,24 @@ Run the built-in algorithm case studies. `--cores`, `--tdp`, and `--grid` set th
 python algo_lab.py --budget 8 --cores 10 --tdp 15 --grid 500
 ```
 
-Regenerate figures from the resulting dataset:
+Regenerate figures from the resulting dataset. With no argument it reads `results/case_studies.json` (falling back to `results/case_studies_full.json`); pass an explicit path to override. Figure 3 needs the full run, not `--quick`:
 
 ```bash
 python make_figures.py
+python make_figures.py results/my_dataset.json     # explicit path
 ```
 
-Serve the dashboard at `http://127.0.0.1:5000`:
+Serve the live dashboard at `http://127.0.0.1:5000`. Enter a command in **Target Command** and press **Run Benchmark**; progress, per-trial figures, energy, carbon, and the environment panel update as the run proceeds:
 
 ```bash
 python perf_bench_server.py --host 127.0.0.1 --port 5000
+```
+
+To view a previously saved report instead of running a new benchmark, use the standalone viewer:
+
+```bash
+python perf_bench.py --output results.json -- python heavy_math.py
+python app.py --report results.json
 ```
 
 Verify the memory instrumentation against the OS kernel counter:
@@ -202,8 +212,12 @@ The same command can be entered in the dashboard's **Target Command** field.
 - Embodied carbon is excluded by construction, so the reported SCI is the operational term only and understates full lifecycle impact.
 
 **Environment**
-- Verified on Windows 11. macOS and Linux paths are implemented but not validated.
-- The dashboard loads charting libraries from a CDN and requires network access.
+- Verified on Windows 11 and Linux. The macOS path is implemented but not validated.
+- `calibrate_external.py` needs the Win32 `GetProcessMemoryInfo` API on Windows, or GNU `/usr/bin/time` on Linux/macOS.
+- `perf_bench_server.py` and its dashboard are fully self-contained and run offline. `app.py` loads charting libraries from a CDN and requires network access.
+
+**Repository scope**
+- The C++/ESP32 case-study sources referenced in the report (Table 4.6) are not published in this repository; representative excerpts appear in the report's Appendix D.
 
 ---
 
@@ -214,12 +228,19 @@ green-code-profiler/
 ├── algo_lab.py             # Tier 1 — in-process algorithm harness (tracemalloc)
 ├── perf_bench.py           # Tier 1 — isolated-process profiler (psutil)
 ├── green_metrics.py        # Tier 2 — power, energy, carbon, grading
-├── perf_bench_server.py    # Tier 3 — Flask dashboard server
-├── templates/dashboard.html
+├── perf_bench_server.py    # Tier 3 — Flask server, live runs
+│   └── templates/
+│       └── dashboard.html  #          dashboard page (self-contained, no CDN)
+├── app.py                  # Tier 3 — standalone viewer for a saved JSON report
 ├── calibrate_external.py   # kernel-counter calibration harness
 ├── make_figures.py         # publication figures from measured data
-├── results/                # datasets (JSON), tables (Markdown), figures
-└── requirements.txt
+├── heavy_math.py           # sample target workload
+├── results.json            # sample report, for `python app.py --report results.json`
+├── results/                # datasets (JSON), tables (Markdown), figures/
+├── docs/                   # proof-of-concept dossier and images
+├── requirements.txt
+├── README.md               # Thai (primary)
+└── README.en.md            # this file
 ```
 
 ---

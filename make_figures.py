@@ -13,7 +13,35 @@ ROOT = pathlib.Path(__file__).resolve().parent
 OUT = ROOT / "results" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
 
-data = json.loads((ROOT / "results" / "case_studies_full.json").read_text(encoding="utf-8"))
+def _load_case_studies() -> dict:
+    """
+    Locate the dataset written by algo_lab.py.
+
+    algo_lab.py defaults to results/case_studies.json; earlier runs used
+    results/case_studies_full.json. Accept either, newest first, and allow an
+    explicit path as argv[1].
+    """
+    if len(sys.argv) > 1:
+        candidates = [pathlib.Path(sys.argv[1])]
+    else:
+        candidates = [ROOT / "results" / name for name in
+                      ("case_studies_full.json", "case_studies.json")]
+
+    for path in candidates:
+        if path.is_file():
+            print(f"  reading {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}")
+            return json.loads(path.read_text(encoding="utf-8"))
+
+    raise SystemExit(
+        "No case-study dataset found. Looked for:\n"
+        + "".join(f"    {p}\n" for p in candidates)
+        + "\nRun the benchmark first:\n"
+          "    python algo_lab.py --cores 10 --tdp 15 --grid 500\n"
+          "(a --quick run also works, but covers fewer input sizes)"
+    )
+
+
+data = _load_case_studies()
 cells = data["cells"]
 scaling = data["scaling"]
 
@@ -160,20 +188,43 @@ PAIRS = [("Bubble → Quick", "Bubble Sort", "Quick Sort", [100, 1000, 10000]),
 def short_n(n):
     return {1000: "1k", 10000: "10k"}.get(n, f"{n:,}")
 
+def cell_at(label, n):
+    """The measured cell for (label, n), or None if this run did not cover it."""
+    return next((c for c in cells if c["label"] == label and c["n"] == n), None)
+
+
 fig, (axL, axR) = plt.subplots(1, 2, figsize=(13.4, 4.8))
 xpos, xlab, speed, energy, groups = [], [], [], [], []
+skipped = []
 cur = 0
 for gi, (title, slow, fast, sizes) in enumerate(PAIRS):
     start = cur
     for n in sizes:
-        cs = next(c for c in cells if c["label"] == slow and c["n"] == n)
-        cf = next(c for c in cells if c["label"] == fast and c["n"] == n)
+        cs, cf = cell_at(slow, n), cell_at(fast, n)
+        if cs is None or cf is None:        # e.g. a --quick run used other sizes
+            skipped.append(f"{title} @ N={n:,}")
+            continue
         xpos.append(cur); xlab.append(short_n(n))
         speed.append(cs["time_mean_ms"] / cf["time_mean_ms"])
         energy.append(cs["energy_j"] - cf["energy_j"])
         cur += 1
-    groups.append((title, start, cur - 1))
-    cur += 2.1                      # wide gutter so group labels never collide
+    if cur > start:                         # only label groups that produced bars
+        groups.append((title, start, cur - 1))
+        cur += 2.1                  # wide gutter so group labels never collide
+
+if skipped:
+    print(f"  note: {len(skipped)} pair(s) not in this dataset, omitted from fig3 "
+          f"({skipped[0]}{', …' if len(skipped) > 1 else ''})")
+if not xpos:
+    plt.close(fig)
+    raise SystemExit(
+        "  fig3 needs matched baseline/optimised pairs at the same N, and this dataset\n"
+        "  has none. It was probably produced by `algo_lab.py --quick`.\n"
+        "  Re-run the full benchmark, then regenerate:\n"
+        "      python algo_lab.py --cores 10 --tdp 15 --grid 500\n"
+        "      python make_figures.py\n"
+        "  (figures 1 and 2 above were written successfully)"
+    )
 
 for ax, vals, ylabel, titletxt, fmt in (
     (axL, speed,  "Speed-up factor  (×, log scale)",

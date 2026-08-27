@@ -111,8 +111,17 @@ def _kernel_peak_unix(cmd: list) -> tuple:
     """
     flag = "-l" if sys.platform == "darwin" else "-v"
     t0 = time.perf_counter()
-    proc = subprocess.run(["/usr/bin/time", flag] + cmd,
-                          stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    try:
+        proc = subprocess.run(["/usr/bin/time", flag] + cmd,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    except FileNotFoundError:
+        raise RuntimeError(
+            "/usr/bin/time not found — this calibration needs the kernel's rusage counter.\n"
+            "  Linux : install GNU time  (apt install time  /  dnf install time)\n"
+            "  macOS : /usr/bin/time ships with the OS; check your PATH\n"
+            "  Windows: no action needed — the Win32 GetProcessMemoryInfo path is used instead.\n"
+            "Note: the shell builtin `time` cannot report peak RSS, so /usr/bin/time is required."
+        ) from None
     wall = time.perf_counter() - t0
     err = proc.stderr or ""
 
@@ -241,7 +250,10 @@ def main() -> None:
 
         peaks = []
         for _ in range(args.repeats):
-            pk, _ = kernel_peak(cmd)
+            try:
+                pk, _ = kernel_peak(cmd)
+            except RuntimeError as exc:
+                raise SystemExit(f"\n[calibration unavailable] {exc}") from None
             peaks.append(pk)
         kern = statistics.median(peaks)
 
