@@ -5,7 +5,7 @@
 
 *A tool that measures how much time, memory, energy, and CO₂ an algorithm uses — then gives it an A–F sustainability grade, like an energy-efficiency label for code.*
 
-โครงงานวิชา IS2 (การสื่อสารและการนำเสนอ) · โรงเรียนขอนแก่นวิทยายน · ปีการศึกษา 2569
+นางสาวพิชามญชุ์ พิมพ์มหา โครงงานวิชา IS2 (การสื่อสารและการนำเสนอ) · โรงเรียนขอนแก่นวิทยายน · ปีการศึกษา 2569
 พัฒนาด้วย **Python** · ทำงานบน Windows / macOS / Linux · โอเพนซอร์ส (MIT)
 
 📖 [English README](README.en.md)
@@ -116,8 +116,6 @@ python perf_bench_server.py --host 127.0.0.1 --port 5000
 เปิดเบราว์เซอร์ไปที่ `http://127.0.0.1:5000` แล้วพิมพ์คำสั่ง เช่น `python your_program.py` ลงในช่อง
 **Target Command** → กด **Run Benchmark** จะเห็นความคืบหน้าแบบสด พร้อมเวลา หน่วยความจำ พลังงาน คาร์บอน และกราฟรายรอบ
 
-![แดชบอร์ด — หน้าสั่งวัด](docs/img/dashboard_run.png)
-![แดชบอร์ด — หน้าผลลัพธ์](docs/img/dashboard_results.png)
 
 **อีกทางเลือกหนึ่ง** — ถ้าต้องการแค่เปิดดูไฟล์ผลลัพธ์ที่บันทึกไว้แล้ว (ไม่สั่งวัดใหม่) ใช้ `app.py`:
 
@@ -141,15 +139,15 @@ python app.py --report results.json      # แล้วเปิด http://127.0
 
 **กราฟการเติบโตของเวลาเมื่อข้อมูลเพิ่มขึ้น** (เส้นชันกว่า = เปลืองกว่า)
 
-![กราฟ scaling](results/figures/fig1_scaling_loglog.png)
+
 
 **ผลที่วัดได้ตรงกับทฤษฎี Big-O** (จุดสีน้ำเงินคือค่าที่วัดได้ ตรงกับที่ทฤษฎีทำนาย)
 
-![Big-O validation](results/figures/fig2_bigO_validation.png)
+
 
 **ผลด้านการประหยัด** — เปลี่ยน Bubble → Quick Sort ที่ระดับเรียกใช้ 1 ล้านครั้ง/วัน ประหยัดได้ ~854 kWh/ปี หรือ ~0.43 ตัน CO₂e/ปี
 
-![headline savings](results/figures/fig3_headline_savings.png)
+
 
 > 📎 ภาพทั้งสามอยู่ใน `results/figures/` เป็นผลที่วัดบนเครื่องอ้างอิง (Intel Core i5-1235U / Windows 11)
 > ถ้าต้องการสร้างใหม่จากเครื่องของคุณเอง ให้รัน `python algo_lab.py` (แบบเต็ม ไม่ใส่ `--quick`) แล้วตามด้วย `python make_figures.py`
